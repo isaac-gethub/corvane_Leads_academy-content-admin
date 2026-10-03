@@ -1,0 +1,13 @@
+import{createClient}from'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const sb=createClient('https://blfgwysgekfqhcafofhe.supabase.co','sb_publishable_ThLetpd4hj49fjce-kXoFA_v4ghwIqV');const $=x=>document.getElementById(x);
+const courses=[
+['corvane_controls_project','Corvane Energy SAP Controls Project'],
+['pm_to_controls_lead','PM to Controls Lead'],
+['pm_to_grc_security_lead','PM to GRC & Security Lead']
+];
+async function apiStatus(){const r=await sb.functions.invoke('academy-content-admin',{body:{action:'status'}});if(r.error)throw r.error;return r.data}
+async function boot(){const q=await sb.auth.getSession();if(!q.data.session)return;try{const s=await apiStatus();$('login').classList.add('hidden');$('app').classList.remove('hidden');$('who').textContent=q.data.session.user.email;render(s.stats||{})}catch(e){$('msg').innerHTML='<div class="msg error">'+e.message+'</div>';await sb.auth.signOut()}}
+function render(stats){$('courses').innerHTML=courses.map(([id,name])=>{const s=stats[id]||{trainee:0,instructor:0,total:0};return `<div class="card"><h3>${name}</h3><div class="muted">Protected materials: ${s.total} · Trainee: ${s.trainee} · Instructor: ${s.instructor}</div><div class="field"><label>Approved course ZIP</label><input type="file" accept=".zip" data-file="${id}"></div><button class="btn primary" data-upload="${id}">INGEST ZIP</button><div id="r-${id}" class="muted" style="margin-top:10px"></div></div>`}).join('');document.querySelectorAll('[data-upload]').forEach(b=>b.onclick=()=>upload(b.dataset.upload))}
+async function upload(id){const inp=document.querySelector(`[data-file="${id}"]`),f=inp?.files?.[0];if(!f){alert('Choose the approved ZIP first.');return};const el=$('r-'+id);el.textContent='Uploading and classifying...';const fd=new FormData();fd.append('app_course_id',id);fd.append('file',f);const {data:{session}}=await sb.auth.getSession();const r=await fetch('https://blfgwysgekfqhcafofhe.supabase.co/functions/v1/academy-content-admin',{method:'POST',headers:{Authorization:'Bearer '+session.access_token,apikey:'sb_publishable_ThLetpd4hj49fjce-kXoFA_v4ghwIqV'},body:fd});const d=await r.json();if(!r.ok||!d.success){el.textContent=d.error||'Upload failed';return};el.textContent=`Uploaded ${d.uploaded} files (${d.trainee} trainee / ${d.instructor} instructor); skipped ${d.skipped}.`;const s=await apiStatus();render(s.stats||{})}
+$('signin').onclick=async()=>{const r=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(r.error){$('msg').innerHTML='<div class="msg error">'+r.error.message+'</div>';return}boot()};
+$('logout').onclick=async()=>{await sb.auth.signOut();location.reload()};boot();
