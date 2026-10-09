@@ -69,3 +69,10 @@ button{cursor:pointer}
  .shell{grid-template-columns:1fr}.sidebar{height:auto;position:relative}.main{padding:18px}.topbar{align-items:flex-start;flex-direction:column}
  .mobile-note{display:block}.sidebar .navbtn{display:inline-block;width:auto}
 }
+
+.pv{margin-top:12px;border-top:1px solid var(--border,#D3C5AC);padding-top:10px}
+.pv h4{margin:12px 0 4px}
+.pv-list{max-height:180px;overflow:auto;margin:4px 0;padding-left:20px;font-size:13px}
+.pv-list.warn li{color:#8B1E2D;font-weight:600}
+.pv-ok{display:block;margin:10px 0;font-weight:700}
+.btn[disabled]{opacity:.45;cursor:default}
